@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Vigenère Cipher</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#f0f6ff; padding:20px; }
+  .card { max-width:700px; margin:auto; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+  textarea, input { width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #ccc; font-size:15px; box-sizing:border-box; }
+  button { padding:10px 16px; margin:5px 5px 5px 0; border:0; border-radius:6px; cursor:pointer; font-size:15px; }
+  button.encrypt { background:#007bff; color:white; }
+  button.decrypt { background:#28a745; color:white; }
+  pre { background:#f9fbff; padding:12px; border-radius:8px; white-space:pre-wrap; }
+  .err { color:#b91c1c; font-weight:bold; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Vigenère Cipher</h2>
+
+  <label for="text">Văn bản:</label>
+  <textarea id="text" rows="4" placeholder="Nhập văn bản..."></textarea>
+
+  <label for="key">Khóa (chỉ chữ cái A-Z):</label>
+  <input id="key" placeholder="Ví dụ: KEY" value="KEY">
+
+  <div>
+    <button class="encrypt" onclick="encryptText()">Mã hóa</button>
+    <button class="decrypt" onclick="decryptText()">Giải mã</button>
+  </div>
+
+  <h3>Kết quả:</h3>
+  <pre id="result">—</pre>
+</div>
+
+<script>
+function cleanInput(str) {
+  return str.toUpperCase().replace(/[^A-Z]/g, "");
+}
+
+function charToNum(c) { return c.charCodeAt(0) - 65; }
+function numToChar(n) { return String.fromCharCode(n + 65); }
+
+function vigenereEncrypt(plain, key) {
+  plain = cleanInput(plain);
+  key = cleanInput(key);
+  if (key.length === 0) return {ok:false, msg:"Khóa không hợp lệ!"};
+
+  let res = "";
+  for (let i=0; i<plain.length; i++) {
+    let p = charToNum(plain[i]);
+    let k = charToNum(key[i % key.length]);
+    let c = (p + k) % 26;
+    res += numToChar(c);
+  }
+  return {ok:true, msg:res};
+}
+
+function vigenereDecrypt(cipher, key) {
+  cipher = cleanInput(cipher);
+  key = cleanInput(key);
+  if (key.length === 0) return {ok:false, msg:"Khóa không hợp lệ!"};
+
+  let res = "";
+  for (let i=0; i<cipher.length; i++) {
+    let c = charToNum(cipher[i]);
+    let k = charToNum(key[i % key.length]);
+    let p = (c - k + 26) % 26;
+    res += numToChar(p);
+  }
+  return {ok:true, msg:res};
+}
+
+function encryptText(){
+  let txt = document.getElementById("text").value;
+  let key = document.getElementById("key").value;
+  let out = vigenereEncrypt(txt, key);
+  document.getElementById("result").innerText = out.ok ? out.msg : out.msg;
+}
+
+function decryptText(){
+  let txt = document.getElementById("text").value;
+  let key = document.getElementById("key").value;
+  let out = vigenereDecrypt(txt, key);
+  document.getElementById("result").innerText = out.ok ? out.msg : out.msg;
+}
+</script>
+</body>
+</html>

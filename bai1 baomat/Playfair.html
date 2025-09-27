@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Playfair Cipher</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f8ff; padding: 20px; }
+  .card { background: #fff; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1);}
+  textarea, input { width: 100%; padding: 10px; margin-top: 8px; border-radius: 6px; border: 1px solid #ccc; }
+  button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px;}
+  #btnEncrypt { background: #007bff; color: #fff; }
+  #btnDecrypt { background: #28a745; color: #fff; }
+  pre { background: #f9f9f9; padding: 12px; border-radius: 6px; min-height: 50px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Playfair Cipher</h2>
+  <label>Nhập văn bản:</label>
+  <textarea id="text"></textarea>
+
+  <label>Khóa (chữ cái, ví dụ: PLAYFAIR)</label>
+  <input type="text" id="key"/>
+
+  <button id="btnEncrypt" onclick="doEncrypt()">Mã hóa</button>
+  <button id="btnDecrypt" onclick="doDecrypt()">Giải mã</button>
+
+  <h3>Kết quả:</h3>
+  <pre id="result"></pre>
+</div>
+
+<script>
+// Tạo ma trận 5x5 từ khóa
+function generateMatrix(key){
+  key = key.toUpperCase().replace(/J/g,"I").replace(/[^A-Z]/g,"");
+  let seen = new Set();
+  let matrix = [];
+  for(let ch of key){
+    if(!seen.has(ch)){ seen.add(ch); matrix.push(ch); }
+  }
+  for(let i=65;i<=90;i++){
+    let ch = String.fromCharCode(i);
+    if(ch==="J") continue;
+    if(!seen.has(ch)){ seen.add(ch); matrix.push(ch); }
+  }
+  return matrix;
+}
+
+function findPos(matrix, ch){
+  if(ch==="J") ch="I";
+  let idx = matrix.indexOf(ch);
+  return [Math.floor(idx/5), idx%5];
+}
+
+function preprocess(text){
+  text = text.toUpperCase().replace(/[^A-Z]/g,"").replace(/J/g,"I");
+  let res = "";
+  for(let i=0;i<text.length;i++){
+    res += text[i];
+    if(i<text.length-1 && text[i]===text[i+1]){
+      res += "X";
+    }
+  }
+  if(res.length % 2 === 1) res += "X";
+  return res;
+}
+
+function encryptPlayfair(text,key){
+  let matrix = generateMatrix(key);
+  let prepared = preprocess(text);
+  let result = "";
+  for(let i=0;i<prepared.length;i+=2){
+    let a=prepared[i], b=prepared[i+1];
+    let [ra,ca]=findPos(matrix,a);
+    let [rb,cb]=findPos(matrix,b);
+    if(ra===rb){ // cùng hàng
+      result += matrix[ra*5+( (ca+1)%5 )];
+      result += matrix[rb*5+( (cb+1)%5 )];
+    } else if(ca===cb){ // cùng cột
+      result += matrix[((ra+1)%5)*5+ca];
+      result += matrix[((rb+1)%5)*5+cb];
+    } else { // khác hàng cột
+      result += matrix[ra*5+cb];
+      result += matrix[rb*5+ca];
+    }
+  }
+  return result;
+}
+
+function decryptPlayfair(text,key){
+  let matrix = generateMatrix(key);
+  let prepared = text.toUpperCase().replace(/[^A-Z]/g,"");
+  let result = "";
+  for(let i=0;i<prepared.length;i+=2){
+    let a=prepared[i], b=prepared[i+1];
+    let [ra,ca]=findPos(matrix,a);
+    let [rb,cb]=findPos(matrix,b);
+    if(ra===rb){ // cùng hàng -> dịch TRÁI
+      result += matrix[ra*5+( (ca+4)%5 )];
+      result += matrix[rb*5+( (cb+4)%5 )];
+    } else if(ca===cb){ // cùng cột -> dịch LÊN
+      result += matrix[((ra+4)%5)*5+ca];
+      result += matrix[((rb+4)%5)*5+cb];
+    } else { // khác hàng cột
+      result += matrix[ra*5+cb];
+      result += matrix[rb*5+ca];
+    }
+  }
+  return result;
+}
+
+function doEncrypt(){
+  let text = document.getElementById("text").value;
+  let key = document.getElementById("key").value;
+  let cipher = encryptPlayfair(text,key);
+  document.getElementById("result").textContent = cipher;
+}
+
+function doDecrypt(){
+  let text = document.getElementById("text").value;
+  let key = document.getElementById("key").value;
+  let plain = decryptPlayfair(text,key);
+  document.getElementById("result").textContent = plain;
+}
+</script>
+</body>
+</html>

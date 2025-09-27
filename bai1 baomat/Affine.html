@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Affine Cipher</title>
+<style>
+  body { font-family: Arial; background:#fefbd8; padding:20px; }
+  textarea, input { width:100%; margin:6px 0; padding:8px; }
+  button { margin:5px; padding:8px 14px; }
+</style>
+</head>
+<body>
+  <h2>Mã hoá Affine</h2>
+  <label>Nhập văn bản:</label>
+  <textarea id="input"></textarea>
+  <label>Khoá a:</label>
+  <input type="number" id="a" value="5">
+  <label>Khoá b:</label>
+  <input type="number" id="b" value="8">
+  <div>
+    <button onclick="encrypt()">Mã hoá</button>
+    <button onclick="decrypt()">Giải mã</button>
+  </div>
+  <h3>Kết quả:</h3>
+  <pre id="output"></pre>
+
+<script>
+function modInverse(a, m) {
+  a = ((a % m) + m) % m;
+  for (let x = 1; x < m; x++) if ((a * x) % m === 1) return x;
+  return -1;
+}
+
+function affine(text, a, b, mode) {
+  let res = "";
+  let inv = modInverse(a, 26);
+  for (let c of text) {
+    if (/[a-z]/i.test(c)) {
+      let base = (c === c.toUpperCase()) ? 65 : 97;
+      let code = c.charCodeAt(0) - base;
+      if (mode === "enc")
+        code = (a * code + b) % 26;
+      else
+        code = (inv * (code - b + 26)) % 26;
+      res += String.fromCharCode(code + base);
+    } else res += c;
+  }
+  return res;
+}
+
+function encrypt() {
+  let txt = document.getElementById("input").value;
+  let a = parseInt(document.getElementById("a").value);
+  let b = parseInt(document.getElementById("b").value);
+  document.getElementById("output").innerText = "Ma hoa : " + affine(txt, a, b, "enc");
+}
+function decrypt() {
+  let txt = document.getElementById("input").value;
+  let a = parseInt(document.getElementById("a").value);
+  let b = parseInt(document.getElementById("b").value);
+  document.getElementById("output").innerText = "Giai ma: " + affine(txt, a, b, "dec");
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Caesar Cipher</title>
+<style>
+  body { font-family: Arial; background:#eef; padding:20px; }
+  textarea, input { width:100%; margin:6px 0; padding:8px; }
+  button { margin:5px; padding:8px 14px; }
+</style>
+</head>
+<body>
+  <h2>Mã hoá Caesar</h2>
+  <label>Nhập văn bản:</label>
+  <textarea id="input"></textarea>
+  <label>Khoá (số):</label>
+  <input type="number" id="key" value="3">
+  <div>
+    <button onclick="encrypt()">Mã hoá</button>
+    <button onclick="decrypt()">Giải mã</button>
+  </div>
+  <h3>Kết quả:</h3>
+  <pre id="output"></pre>
+
+<script>
+function caesar(str, k, mode) {
+  let res = "";
+  for (let c of str) {
+    if (/[a-z]/i.test(c)) {
+      let base = (c === c.toUpperCase()) ? 65 : 97;
+      let code = c.charCodeAt(0) - base;
+      code = (mode === 'enc' ? (code + k) : (code - k + 26)) % 26;
+      res += String.fromCharCode(code + base);
+    } else res += c;
+  }
+  return res;
+}
+function encrypt() {
+  let txt = document.getElementById("input").value;
+  let k = parseInt(document.getElementById("key").value);
+  document.getElementById("output").innerText = "Ma hoa : " + caesar(txt, k, 'enc');
+}
+function decrypt() {
+  let txt = document.getElementById("input").value;
+  let k = parseInt(document.getElementById("key").value);
+  document.getElementById("output").innerText = "Giai ma : " + caesar(txt, k, 'dec');
+}
+</script>
+</body>
+</html>
